@@ -94,8 +94,8 @@ tweeter_freq_table <- tweets_table$all_tweets %>% table %>% as.data.frame %>%
         mutate(percentage_of_tweeters = ((number_of_tweeters / n_tweeters) * 100) %>% round(2))
 head(tweeter_freq_table, 10)
 
-paste0(sum(tweeter_freq_table$percentage_of_tweeters[1:10]), 
-       "% of #ntchat tweeters tweeted 10 times or less.")
+paste0(sum(tweeter_freq_table$percentage_of_tweeters[1:17]), 
+       "% of #ntchat tweeters tweeted 17 times or less (i.e., monthly).")
 
 
 ## --------------------------------------------------------------
@@ -117,15 +117,13 @@ ntchat_no_rt %>% dim
 
 ## percentage of tweets that are not retweets
 n_no_rt <- ntchat_no_rt %>% pull(status_id) %>% unique %>% length
-n_no_rt 
-paste0(((n_no_rt / n_tweets) * 100) %>% round(2),
-       "% of #ntchat tweets that are not retweets.")
+paste0(n_no_rt, ", or ", ((n_no_rt / n_tweets) * 100) %>% round(2),
+       "% of #ntchat tweets, were not retweets.")
 
 ## percentage of tweeters that contributed something other than retweets
 n_tweeters_no_rt <- ntchat_no_rt %>% pull(user_id) %>% unique %>% length
-n_tweeters_no_rt
-paste0({(n_tweeters_no_rt / n_tweeters) * 100} %>% round(2),
-       "% of #ntchat tweeters contributed something other than retweets.")
+paste0(n_tweeters_no_rt, ", or ", ((n_tweeters_no_rt / n_tweeters) * 100) %>% round(2),
+       "% of #ntchat tweeters, contributed something other than retweets.")
 
 
 ## --------------------------------------------------------------
@@ -152,11 +150,11 @@ head(tweeter_no_rt_freq_table, 10)
 
 ## tweeters (more than retweets) who only contributed once
 paste0(tweeter_no_rt_freq_table[1, 'number_of_tweeters'], 
-       "% of #ntchat tweeters who only contributed once")
+       " #ntchat tweeters only contributed once")
 
 ## tweeters (more than retweets) who contributed, an avearage, once per month or less
-paste0(sum(tweeter_no_rt_freq_table$percentage_of_tweeters[1:10]), 
-       "% of #ntchat tweeters tweeted 10 times or less.")
+paste0(sum(tweeter_no_rt_freq_table$percentage_of_tweeters[1:17]), 
+       "% of #ntchat tweeters tweeted 17 times or less (i.e., monthly).")
 
 ## average number of retweets per tweet
 ntchat_no_rt$retweet_count %>% as.numeric %>% mean %>% round(2)
@@ -169,8 +167,8 @@ number_of_retweets_table <- ntchat_no_rt %>% pull(retweet_count) %>%
         rename(retweets = ".", count = "Freq") %>%
         arrange(desc(count))
 n_zero_retweets <- number_of_retweets_table$count[1]
-paste0({(n_zero_retweets / n_no_rt) * 100} %>% round(2),
-       "% of #ntchat tweets were not retweeted")
+paste0((((nrow(ntchat_no_rt) - n_zero_retweets) / n_no_rt) * 100) %>% round(2),
+       "% of #ntchat tweets were retweeted")
 
 ## average number of likes per tweet
 ntchat_no_rt$favorite_count %>% as.numeric %>% mean %>% round(2)
@@ -183,7 +181,7 @@ number_of_favorites_table <- ntchat_no_rt %>% pull(favorite_count) %>%
         rename(retweets = ".", count = "Freq") %>%
         arrange(desc(count))
 n_zero_favorites <- number_of_favorites_table$count[1]
-paste0({(n_zero_favorites / n_no_rt) * 100} %>% round(2),
+paste0((((nrow(ntchat_no_rt) - n_zero_favorites) / n_no_rt) * 100) %>% round(2),
        "% of #ntchat tweets were not liked")
 
 ## average time on Twitter per tweeter (in years)
@@ -288,7 +286,6 @@ moe <- function(x, n, z=1.96) {
         return(y)
 }
 
-
 ## purpose of tweets
 tweet_raw <- coded_tweets %>% summarize(self = self %>% as.numeric %>% sum,
                            others = others %>% as.numeric %>% sum,
@@ -315,9 +312,55 @@ tweeter_moe <- tweeter_proportion %>% moe(., nrow(coded_tweeters))
 rbind(tweeter_raw, tweeter_proportion, tweeter_moe)
                         
 ## country of tweeters
-coded_tweeters$location_manual %>% table %>% as.data.frame %>% 
+country_table <- coded_tweeters$location_manual %>% table %>% as.data.frame %>% 
         mutate(Freq = {Freq * 100 / nrow(coded_tweeters)} %>% round(2)) %>%
         arrange(desc(Freq))
+
+
+## --------------------------------------------------------------
+## Visualization: Tweet Purposes
+## --------------------------------------------------------------
+
+tweet_data <- data.frame(types, values)
+tweet_data$types <- factor(mydata$types,levels = c(colnames(edchat_by_type)))
+
+
+# include MOE bars: https://heuristically.wordpress.com/2013/10/20/bar-plot-with-error-bars-r/
+ggplot(data = mydata, 
+       aes(x=types, y=values, fill=purpose)
+) +
+  # use geom_col as shortcut for geom_bar(stat = "identity")
+  geom_col(colour="grey20", 
+           width = 0.4, 
+           position = position_dodge(width = 0.6)  # position = "dodge" or "fill" or "stack"
+  ) +  
+  geom_errorbar(aes(ymin=values-me, ymax=values+me), 
+                width=.1, position=position_dodge(.6)) +  # draw the bar plot using the precalculated 95% CI
+  #scale_fill_brewer(palette="Set1") +  # Qualitative: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
+  #scale_fill_grey() +
+  scale_fill_manual(values = c("grey35", "grey55", "grey75", "grey95")) +
+  #geom_hline(yintercept=0, color="black", size = .5, linetype="dashed") +
+  #theme_bw() + 
+  theme(panel.background = element_rect(fill = "white", colour = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_line(size = .5, colour = "grey80"),
+        axis.title=element_text(size=28, family="serif"),
+        axis.text=element_text(size=20, family="serif"),
+        legend.title=element_text(size=28, family="serif"), 
+        legend.text=element_text(size=20, family="serif")
+  ) +
+  xlab("Tweet Types") + ylab("Proportion") + labs(fill="Purpose") +
+  geom_hline(yintercept=0, color="black", size = .75)
+ggsave("img/tweet_purpose_by_type_bw.png", width = 1 * 16, height = 1 * 9)
+
+
+## --------------------------------------------------------------
+## Visualization: Tweeters
+## --------------------------------------------------------------
+
+
 
 
 ## --------------------------------------------------------------
