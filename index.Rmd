@@ -43,7 +43,7 @@ class: inverse, center, middle
 
 ---
 
-# Twitter: Group Behavior
+# Twitter Effects: Group Behavior
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
 include_graphics("img/group-behavior.jpg")
@@ -51,7 +51,7 @@ include_graphics("img/group-behavior.jpg")
 
 ---
 
-# Twitter: Alone Together
+# Twitter Effects: Alone Together
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
 include_graphics("img/alone-together.jpg")
@@ -59,7 +59,7 @@ include_graphics("img/alone-together.jpg")
 
 ---
 
-# Twitter: Identity and Anonymity
+# Twitter Effects: Identity and Anonymity
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
 include_graphics("img/anonymous.jpg")
@@ -67,7 +67,7 @@ include_graphics("img/anonymous.jpg")
 
 ---
 
-# Twitter: Mediated Reality
+# Twitter Effects: Mediated Reality
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
 include_graphics("img/mediated-reality.jpg")
@@ -359,7 +359,7 @@ class: inverse, center, middle
 ### RQ1. What are participants doing in #ntchat?
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
-include_graphics("img/buscemi.png")
+include_graphics("img/tweet-proportion-by-purpose.png")
 ```
 
 ---
@@ -407,7 +407,7 @@ include_graphics("img/buscemi.png")
 ### RQ2. Who is contributing to #ntchat? 
 
 ```{r, out.width = "720px", echo = FALSE, fig.align = "center"}
-include_graphics("img/buscemi.png")
+include_graphics("img/tweeter-proportion-by-vocation.png")
 ```
 
 ---

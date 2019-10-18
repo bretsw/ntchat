@@ -321,46 +321,72 @@ country_table <- coded_tweeters$location_manual %>% table %>% as.data.frame %>%
 ## Visualization: Tweet Purposes
 ## --------------------------------------------------------------
 
-tweet_data <- data.frame(types, values)
-tweet_data$types <- factor(mydata$types,levels = c(colnames(edchat_by_type)))
-
+tweet_data <- rbind(tweet_proportion, tweet_moe) %>% 
+    t() %>%
+    as.data.frame() %>%
+    rownames_to_column(var = 'purpose')
+colnames(tweet_data) <- c("purpose", "proportion", "moe")
+tweet_data$purpose <- factor(tweet_data$purpose, levels = tweet_data$purpose)
 
 # include MOE bars: https://heuristically.wordpress.com/2013/10/20/bar-plot-with-error-bars-r/
-ggplot(data = mydata, 
-       aes(x=types, y=values, fill=purpose)
-) +
-  # use geom_col as shortcut for geom_bar(stat = "identity")
-  geom_col(colour="grey20", 
-           width = 0.4, 
-           position = position_dodge(width = 0.6)  # position = "dodge" or "fill" or "stack"
-  ) +  
-  geom_errorbar(aes(ymin=values-me, ymax=values+me), 
-                width=.1, position=position_dodge(.6)) +  # draw the bar plot using the precalculated 95% CI
-  #scale_fill_brewer(palette="Set1") +  # Qualitative: Accent, Dark2, Paired, Pastel1, Pastel2, Set1, Set2, Set3
-  #scale_fill_grey() +
-  scale_fill_manual(values = c("grey35", "grey55", "grey75", "grey95")) +
-  #geom_hline(yintercept=0, color="black", size = .5, linetype="dashed") +
-  #theme_bw() + 
+ggplot(data = tweet_data, aes(x=purpose, y=proportion)) +
+  geom_col(fill="#52854C", color="black", width = 0.8, size=3) +
+  geom_errorbar(aes(ymin=proportion-moe, ymax=proportion+moe), 
+                width=.1,
+                size=2) +
   theme(panel.background = element_rect(fill = "white", colour = "white"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
-        axis.line = element_line(size = .5, colour = "grey80"),
-        axis.title=element_text(size=28, family="serif"),
-        axis.text=element_text(size=20, family="serif"),
-        legend.title=element_text(size=28, family="serif"), 
-        legend.text=element_text(size=20, family="serif")
-  ) +
-  xlab("Tweet Types") + ylab("Proportion") + labs(fill="Purpose") +
-  geom_hline(yintercept=0, color="black", size = .75)
-ggsave("img/tweet_purpose_by_type_bw.png", width = 1 * 16, height = 1 * 9)
+        axis.line = element_line(size = .5, colour = "black"),
+        axis.title = element_text(size=48, family="serif"),
+        axis.text = element_text(size=44, family="serif")
+        ) +
+  xlab("Tweet Purpose") + ylab("Proportion") + 
+  geom_hline(yintercept=0, color="gray20", size = .75)
+
+ggsave("img/tweet-proportion-by-purpose.png", width = 1 * 16, height = 1 * 9)
 
 
 ## --------------------------------------------------------------
 ## Visualization: Tweeters
 ## --------------------------------------------------------------
 
+tweeter_data <- rbind(tweeter_proportion, tweeter_moe) %>% 
+  rename(PST = pst,
+         Teacher = teacher,
+         TE = te,
+         Consult = consult,
+         Admin = admin,
+         Grad = grad,
+         NonEd = non.ed,
+         Corp = corp,
+         Other = other
+  ) %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = 'vocation')
+colnames(tweeter_data) <- c("vocation", "proportion", "moe")
+tweeter_data$vocation <- factor(tweeter_data$vocation, levels = tweeter_data$vocation)
 
+# include MOE bars: https://heuristically.wordpress.com/2013/10/20/bar-plot-with-error-bars-r/
+ggplot(data = tweeter_data, aes(x=vocation, y=proportion)) +
+  geom_col(fill="#52854C", color="black", width = 0.8, size=2.5) +
+  geom_errorbar(aes(ymin=proportion-moe, ymax=proportion+moe), 
+                width=.2,
+                size=1.5) +
+  theme(panel.background = element_rect(fill = "white", colour = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_line(size = .5, colour = "black"),
+        axis.title = element_text(size=48, family="serif"),
+        axis.text = element_text(size=32, family="serif")
+  ) +
+  xlab("Tweeter Vocation") + ylab("Proportion") + 
+  geom_hline(yintercept=0, color="gray20", size = .75)
+
+ggsave("img/tweeter-proportion-by-vocation.png", width = 1 * 16, height = 1 * 9)
 
 
 ## --------------------------------------------------------------
